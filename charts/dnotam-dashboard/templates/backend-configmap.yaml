@@ -1,0 +1,33 @@
+{{- if .Values.backend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-backend-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: backend
+data:
+  # MongoDB Configuration
+  MONGODB_URI: "mongodb://{{ .Values.appName }}-mongodb-0.{{ .Values.appName }}-mongodb.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.mongodb.port }}"
+  MONGODB_DATABASE: {{ .Values.mongodb.database }}
+
+  # Kafka Configuration
+  KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.serviceName }}.{{ .Values.swimNamespace }}.svc.cluster.local:{{ .Values.kafka.port }}"
+
+  # SWIM DNOTAM Consumer (WFS Request/Reply proxy)
+  CONSUMER_URL: "http://{{ .Values.consumer.serviceName }}.{{ .Values.swimNamespace }}.svc.cluster.local:{{ .Values.consumer.port }}"
+
+  # OpenTelemetry Configuration
+  OTEL_ENABLED: {{ .Values.otel.enabled | quote }}
+  {{- if .Values.otel.enabled }}
+  OTEL_SDK_DISABLED: "false"
+  OTEL_ENDPOINT: {{ .Values.otel.endpoint }}
+  {{- else }}
+  OTEL_SDK_DISABLED: "true"
+  {{- end }}
+
+  # Application Configuration
+  QUARKUS_LOG_LEVEL: {{ .Values.backend.env.logLevel }}
+  JAVA_OPTS: {{ .Values.backend.env.javaOpts }}
+{{- end }}

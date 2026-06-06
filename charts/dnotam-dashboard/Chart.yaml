@@ -1,0 +1,17 @@
+apiVersion: v2
+name: dnotam-dashboard
+description: DNOTAM Operations Dashboard - Real-time SWIM DNOTAM consumer application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - swim
+  - dnotam
+  - aviation
+  - atm
+  - eurocontrol
+maintainers:
+  - name: Marcelo Sales
+    email: masales@redhat.com
+sources:
+  - https://github.com/swim-developer/rhone

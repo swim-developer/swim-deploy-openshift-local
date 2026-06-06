@@ -1,0 +1,11 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-frontend-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+data:
+  BACKEND_URL: "http://{{ .Values.appName }}-backend:{{ .Values.backend.port }}"
+{{- end }}

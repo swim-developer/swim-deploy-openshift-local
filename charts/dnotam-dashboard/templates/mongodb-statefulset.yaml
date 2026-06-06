@@ -1,0 +1,76 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.appName }}-mongodb
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  serviceName: {{ .Values.appName }}-mongodb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}-mongodb
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}-mongodb
+        {{- toYaml .Values.labels | nindent 8 }}
+        app.kubernetes.io/component: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: {{ .Values.mongodb.image }}
+        imagePullPolicy: {{ .Values.mongodb.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.mongodb.port }}
+          name: mongodb
+          protocol: TCP
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.mongodb.database }}
+        resources:
+          {{- toYaml .Values.mongodb.resources | nindent 10 }}
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+        livenessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+  {{- if .Values.mongodb.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.mongodb.persistence.storageClass }}
+      storageClassName: {{ .Values.mongodb.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.mongodb.persistence.size }}
+  {{- else }}
+  volumes:
+  - name: mongodb-data
+    emptyDir: {}
+  {{- end }}
+{{- end }}

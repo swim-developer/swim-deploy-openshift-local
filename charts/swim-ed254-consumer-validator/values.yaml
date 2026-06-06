@@ -1,0 +1,71 @@
+namespace: swim-demo
+
+appName: ed254-consumer-validator
+
+clusterDomain: apps-crc.testing
+
+labels:
+  app: ed254-consumer-validator
+  app.kubernetes.io/name: ed254-consumer-validator
+  app.kubernetes.io/part-of: ed254-consumer-validator
+
+image:
+  repository: quay.io/masales/swim-ed254-consumer-validator
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1
+
+resources:
+  requests:
+    memory: 128Mi
+    cpu: 100m
+  limits:
+    memory: 256Mi
+    cpu: 500m
+
+service:
+  httpPort: 8080
+  httpsPort: 8443
+
+config:
+  quarkusHttpPort: "8080"
+  quarkusHttpSslPort: "8443"
+  quarkusHttpSslCertificateFiles: "/certs/server/tls.crt"
+  quarkusHttpSslCertificateKeyFiles: "/certs/server/tls.key"
+  quarkusHttpSslCertificateTrustStoreFile: "/certs/ca/ca.crt"
+  quarkusHttpSslCertificateTrustStoreFileType: "PEM"
+  quarkusLogLevel: "INFO"
+  eventGeneratorEnabled: "true"
+  eventGeneratorSchedule: "0 */1 * * * ?"
+  eventGeneratorEventsPath: "/opt/events"
+  eventGeneratorExceptionsPath: "/opt/exceptions"
+  amqpBrokerHost: "validator-artemis-amqp-0-svc.swim-demo.svc.cluster.local"
+  amqpBrokerPort: "5672"
+  mariadbHost: "ed254-consumer-validator-mariadb.swim-demo.svc.cluster.local"
+  mariadbPort: "3306"
+  mariadbDatabase: "swim_ed254_consumer_validator"
+  mariadbUsername: "swim"
+  mariadbPassword: "swim"
+
+amqp:
+  username: "admin"
+  password: "admin"
+
+serverCert:
+  enabled: true
+  issuerName: swim-ca-issuer
+  issuerKind: ClusterIssuer
+
+clientCert:
+  enabled: true
+  issuerName: swim-ca-issuer
+  issuerKind: ClusterIssuer
+
+route:
+  enabled: true
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}

@@ -1,0 +1,11 @@
+{{- if .Values.pki.enabled }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: swim-ca-issuer
+  labels:
+    {{- include "swim-infra.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: swim-root-ca-secret
+{{- end }}

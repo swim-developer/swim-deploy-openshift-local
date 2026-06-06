@@ -1,0 +1,46 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}-frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}-frontend
+        {{- toYaml .Values.labels | nindent 8 }}
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.appName }}-frontend-config
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.frontend.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.frontend.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+{{- end }}

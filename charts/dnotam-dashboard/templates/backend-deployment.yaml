@@ -1,0 +1,82 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-backend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}-backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}-backend
+        {{- toYaml .Values.labels | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      initContainers:
+      # Wait for MongoDB to be ready
+      - name: wait-for-mongodb
+        image: docker.io/busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for MongoDB to be ready..."
+          until nc -z {{ .Values.appName }}-mongodb-0.{{ .Values.appName }}-mongodb.{{ .Values.namespace }}.svc.cluster.local {{ .Values.mongodb.port }}; do
+            echo "MongoDB not ready, waiting 5s..."
+            sleep 5
+          done
+          echo "MongoDB is ready!"
+      # Wait for Kafka to be ready
+      - name: wait-for-kafka
+        image: docker.io/busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for Kafka to be ready..."
+          KAFKA_HOST="{{ .Values.kafka.serviceName }}.{{ .Values.swimNamespace }}.svc.cluster.local"
+          KAFKA_PORT="{{ .Values.kafka.port }}"
+          until nc -z $KAFKA_HOST $KAFKA_PORT; do
+            echo "Kafka not ready, waiting 5s..."
+            sleep 5
+          done
+          echo "Kafka is ready!"
+      containers:
+      - name: backend
+        image: {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.backend.port }}
+          name: http
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.appName }}-backend-config
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.backend.livenessProbe.path }}
+            port: {{ .Values.backend.port }}
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.backend.readinessProbe.path }}
+            port: {{ .Values.backend.port }}
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.readinessProbe.failureThreshold }}
+{{- end }}

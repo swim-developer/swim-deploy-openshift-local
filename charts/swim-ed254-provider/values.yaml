@@ -1,0 +1,89 @@
+namespace: swim-demo
+
+appName: swim-ed254-provider
+
+clusterDomain: apps-crc.testing
+
+labels:
+  app: swim-ed254-provider
+  app.kubernetes.io/part-of: swim-ed254
+
+image:
+  repository: quay.io/masales/swim-ed254-provider
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1
+
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 100m
+  limits:
+    memory: 512Mi
+    cpu: "1"
+
+service:
+  httpPort: 8080
+  httpsPort: 8443
+
+internalService:
+  port: 9080
+
+hpa:
+  enabled: false
+
+config:
+  postgresHost: "ed254-provider-postgres.swim-demo.svc.cluster.local"
+  postgresPort: "5432"
+  postgresDb: "ed254_provider"
+  amqpHost: "provider-artemis-amqps-0-svc.swim-demo.svc.cluster.local"
+  amqpPort: "5671"
+  artemisBrokerName: "provider-artemis"
+  artemisJmxHost: ""
+  artemisJmxPort: "1099"
+  kafkaBootstrapServers: "kafka-kafka-bootstrap.swim-demo.svc.cluster.local:9092"
+  kafkaTopic: "ed254-events-all-topic"
+  kafkaGroupId: "swim-ed254-provider"
+  kafkaPattern: "false"
+  quarkusHttpPort: "8080"
+  internalPort: "9080"
+  logLevel: "INFO"
+  otelEnabled: "false"
+  otelSdkDisabled: "true"
+  otelEndpoint: ""
+  otelHeaders: ""
+  prometheusEnabled: "true"
+  k8sSecretAddress: "provider-artemis-ed254-address-bp"
+  k8sSecretSecurity: "provider-artemis-ed254-security-bp"
+
+secret:
+  postgresUser: "swim-provider"
+  postgresPassword: "swim-provider"
+  amqpUsername: "admin"
+  amqpPassword: "admin"
+
+oidc:
+  enabled: "true"
+  authServerUrl: "https://rhbk.apps-crc.testing/realms/swim"
+  clientId: "swim-ed254-provider"
+  clientSecret: "ed254-provider-secret"
+
+serverCert:
+  enabled: true
+  issuerName: swim-ca-issuer
+  issuerKind: ClusterIssuer
+
+route:
+  http:
+    enabled: true
+  mtls:
+    enabled: true
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+
+serviceMonitor:
+  enabled: false

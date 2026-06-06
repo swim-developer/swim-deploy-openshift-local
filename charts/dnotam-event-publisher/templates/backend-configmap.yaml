@@ -1,0 +1,16 @@
+{{- if .Values.backend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-backend-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+data:
+  JAVA_OPTS: {{ .Values.backend.env.javaOpts | quote }}
+  LOG_LEVEL: {{ .Values.backend.env.logLevel | quote }}
+  PROVIDER_TRIGGER_URL: "http://{{ .Values.provider.serviceName }}.{{ .Values.swimNamespace }}.svc.cluster.local:{{ .Values.provider.internalPort }}"
+  KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.serviceName }}.{{ .Values.swimNamespace }}.svc.cluster.local:{{ .Values.kafka.port }}"
+  KAFKA_TOPIC: {{ .Values.kafka.topic | quote }}
+  CORS_ORIGINS: "*"
+{{- end }}

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ed254-consumer-validator.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "ed254-consumer-validator.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: http
+    port: {{ .Values.service.httpPort }}
+    targetPort: {{ .Values.service.httpPort }}
+    protocol: TCP
+  - name: https
+    port: {{ .Values.service.httpsPort }}
+    targetPort: {{ .Values.service.httpsPort }}
+    protocol: TCP
+  type: ClusterIP

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dnotam-event-publisher
+description: DNOTAM Event Publisher - AISP simulator for publishing Digital NOTAMs
+version: 1.0.0
+appVersion: "1.0.0"
+type: application

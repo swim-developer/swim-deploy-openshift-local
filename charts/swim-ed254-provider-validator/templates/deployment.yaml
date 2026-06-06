@@ -1,0 +1,69 @@
+{{- include "swim-ed254-provider-validator.validateExposure" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-ed254-provider-validator.labels" . | nindent 4 }}
+    app.kubernetes.io/singleton: "true"
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "swim-ed254-provider-validator.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        {{- include "swim-ed254-provider-validator.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: {{ .Values.appName }}
+        app.kubernetes.io/component: ed254-provider-validator
+        app.kubernetes.io/part-of: swim-ed254
+        app.kubernetes.io/singleton: "true"
+    spec:
+      containers:
+      - name: provider-validator
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.httpPort }}
+          protocol: TCP
+          name: http
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.appName }}-config
+        - secretRef:
+            name: {{ .Values.appName }}-mtls
+            optional: true
+        volumeMounts:
+        - name: client-certs
+          mountPath: /certs/client
+          readOnly: true
+        - name: data
+          mountPath: /data
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /q/health/live
+            port: {{ .Values.service.httpPort }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /q/health/ready
+            port: {{ .Values.service.httpPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+      volumes:
+      - name: client-certs
+        secret:
+          secretName: {{ .Values.appName }}-certs
+          optional: true
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.appName }}-data

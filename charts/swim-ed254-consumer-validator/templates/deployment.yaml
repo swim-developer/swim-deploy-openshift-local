@@ -1,0 +1,76 @@
+{{- include "ed254-consumer-validator.validateExposure" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ed254-consumer-validator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "ed254-consumer-validator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ed254-consumer-validator.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Values.appName }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.httpPort }}
+          name: http
+          protocol: TCP
+        - containerPort: {{ .Values.service.httpsPort }}
+          name: https
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.appName }}-config
+        - secretRef:
+            name: {{ .Values.appName }}-amqp-credentials
+        livenessProbe:
+          httpGet:
+            path: /q/health/live
+            port: {{ .Values.service.httpPort }}
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /q/health/ready
+            port: {{ .Values.service.httpPort }}
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: server-cert
+          mountPath: /certs/server
+          readOnly: true
+        - name: ca-cert
+          mountPath: /certs/ca
+          readOnly: true
+      volumes:
+      - name: server-cert
+        secret:
+          secretName: {{ .Values.appName }}-server-tls
+          items:
+          - key: tls.crt
+            path: tls.crt
+          - key: tls.key
+            path: tls.key
+      - name: ca-cert
+        secret:
+          secretName: {{ .Values.appName }}-server-tls
+          items:
+          - key: ca.crt
+            path: ca.crt

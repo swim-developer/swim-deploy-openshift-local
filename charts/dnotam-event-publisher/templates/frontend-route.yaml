@@ -1,0 +1,23 @@
+{{- if and .Values.frontend.enabled .Values.frontend.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Values.appName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+spec:
+  host: {{ .Values.frontend.route.host }}
+  to:
+    kind: Service
+    name: {{ .Values.appName }}-frontend
+    weight: 100
+  port:
+    targetPort: http
+  {{- if .Values.frontend.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.frontend.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.frontend.route.tls.insecureEdgeTerminationPolicy }}
+  {{- end }}
+  wildcardPolicy: None
+{{- end }}

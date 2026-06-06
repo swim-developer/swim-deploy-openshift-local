@@ -1,0 +1,35 @@
+{{- if .Values.clientCert.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: swim-ed254-client-cert
+  namespace: {{ .Values.namespace }}
+spec:
+  secretName: {{ .Values.appName }}-certs
+  duration: {{ .Values.clientCert.duration }}
+  renewBefore: {{ .Values.clientCert.renewBefore }}
+  commonName: swim-ed254-client
+  usages:
+    - client auth
+    - digital signature
+    - key encipherment
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048
+    rotationPolicy: Always
+  issuerRef:
+    name: {{ .Values.clientCert.issuerName }}
+    kind: {{ .Values.clientCert.issuerKind }}
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        name: {{ .Values.appName }}-passwords
+        key: password
+    jks:
+      create: true
+      passwordSecretRef:
+        name: {{ .Values.appName }}-passwords
+        key: password
+{{- end }}

@@ -1,0 +1,105 @@
+namespace: swim-demo
+appName: dnotam-dashboard
+
+swimNamespace: swim-demo
+
+mongodb:
+  enabled: true
+  image: docker.io/mongo:7.0
+  pullPolicy: IfNotPresent
+  database: swim-dnotam
+  port: 27017
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "1"
+
+backend:
+  enabled: true
+  image:
+    repository: quay.io/masales/dnotam-dashboard-backend
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  port: 8090
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    javaOpts: "-Xmx768m -XX:+UseParallelGC"
+    logLevel: "INFO"
+  livenessProbe:
+    path: /q/health/live
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    path: /q/health/ready
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+frontend:
+  enabled: true
+  image:
+    repository: quay.io/masales/dnotam-dashboard-frontend
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  port: 8080
+  resources:
+    requests:
+      memory: "32Mi"
+      cpu: "50m"
+    limits:
+      memory: "64Mi"
+      cpu: "100m"
+  env:
+    backendUrl: http://dnotam-dashboard-backend:8090
+  route:
+    enabled: true
+    host: dnotam-dashboard.apps-crc.testing
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+
+consumer:
+  serviceName: swim-dnotam-consumer
+  port: 8080
+
+kafka:
+  serviceName: kafka-kafka-bootstrap
+  port: 9092
+  topics:
+    closure: dnotam-events-closure-topic
+    restriction: dnotam-events-restriction-topic
+    surface: dnotam-events-surface-condition-topic
+    airspace: dnotam-events-airspace-topic
+    hazards: dnotam-events-hazards-navaids-topic
+    others: dnotam-events-others-topic
+  consumerGroup: dnotam-dashboard
+
+otel:
+  enabled: false
+  endpoint: ""
+
+labels:
+  app.kubernetes.io/name: dnotam-dashboard
+  app.kubernetes.io/instance: dnotam-dashboard
+  app.kubernetes.io/part-of: swim-framework
+  app.kubernetes.io/component: example-app
+  app.kubernetes.io/managed-by: helm

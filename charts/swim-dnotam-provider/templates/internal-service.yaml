@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}-internal
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-dnotam-provider.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: internal
+    port: {{ .Values.internalService.port }}
+    targetPort: {{ .Values.internalService.port }}
+    protocol: TCP
+  selector:
+    {{- include "swim-dnotam-provider.selectorLabels" . | nindent 4 }}

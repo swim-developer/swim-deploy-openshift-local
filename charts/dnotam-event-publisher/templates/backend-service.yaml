@@ -1,0 +1,19 @@
+{{- if .Values.backend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}-backend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  selector:
+    app: {{ .Values.appName }}-backend
+  ports:
+    - port: {{ .Values.backend.port }}
+      targetPort: {{ .Values.backend.port }}
+      name: http
+      protocol: TCP
+  type: ClusterIP
+{{- end }}

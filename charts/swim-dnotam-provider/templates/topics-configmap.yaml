@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-topics
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-dnotam-provider.labels" . | nindent 4 }}
+data:
+  DNOTAM_TOPICS_CONFIG: {{ .Values.topics.config | quote }}

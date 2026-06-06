@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-ed254-provider.labels" . | nindent 4 }}
+    component: configuration
+data:
+  POSTGRES_HOST: {{ .Values.config.postgresHost }}
+  POSTGRES_PORT: {{ .Values.config.postgresPort | quote }}
+  POSTGRES_DB: {{ .Values.config.postgresDb }}
+  AMQP_HOST: {{ .Values.config.amqpHost }}
+  AMQP_PORT: {{ .Values.config.amqpPort | quote }}
+  ARTEMIS_BROKER_NAME: {{ .Values.config.artemisBrokerName }}
+  ARTEMIS_JMX_HOST: {{ .Values.config.artemisJmxHost }}
+  ARTEMIS_JMX_PORT: {{ .Values.config.artemisJmxPort | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrapServers }}
+  KAFKA_TOPIC: {{ .Values.config.kafkaTopic }}
+  KAFKA_GROUP_ID: {{ .Values.config.kafkaGroupId }}
+  KAFKA_PATTERN: {{ .Values.config.kafkaPattern | quote }}
+  QUARKUS_HTTP_PORT: {{ .Values.config.quarkusHttpPort | quote }}
+  INTERNAL_PORT: {{ .Values.config.internalPort | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel }}
+  OTEL_ENABLED: {{ .Values.config.otelEnabled | quote }}
+  OTEL_SDK_DISABLED: {{ .Values.config.otelSdkDisabled | quote }}
+  OTEL_ENDPOINT: {{ .Values.config.otelEndpoint | quote }}
+  OTEL_HEADERS: {{ .Values.config.otelHeaders | quote }}
+  PROMETHEUS_ENABLED: {{ .Values.config.prometheusEnabled | quote }}
+  OPENAPI_SERVERS: "https://{{ .Values.appName }}-{{ .Values.namespace }}.{{ .Values.clusterDomain }}"
+  QUARKUS_OIDC_TLS_CONFIGURATION_NAME: "amqp-client"
+  KUBERNETES_NAMESPACE: {{ .Values.namespace }}
+  K8S_SECRET_ADDRESS: {{ .Values.config.k8sSecretAddress }}
+  K8S_SECRET_SECURITY: {{ .Values.config.k8sSecretSecurity }}
+  SWIM_XSD_PATH: ""

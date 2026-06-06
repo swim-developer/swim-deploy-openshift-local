@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ed254-consumer-validator.labels" . | nindent 4 }}
+data:
+  QUARKUS_HTTP_PORT: {{ .Values.config.quarkusHttpPort | quote }}
+  QUARKUS_HTTP_SSL_PORT: {{ .Values.config.quarkusHttpSslPort | quote }}
+  QUARKUS_HTTP_SSL_CERTIFICATE_FILES: {{ .Values.config.quarkusHttpSslCertificateFiles | quote }}
+  QUARKUS_HTTP_SSL_CERTIFICATE_KEY_FILES: {{ .Values.config.quarkusHttpSslCertificateKeyFiles | quote }}
+  QUARKUS_HTTP_SSL_CERTIFICATE_TRUST_STORE_FILE: {{ .Values.config.quarkusHttpSslCertificateTrustStoreFile | quote }}
+  QUARKUS_HTTP_SSL_CERTIFICATE_TRUST_STORE_FILE_TYPE: {{ .Values.config.quarkusHttpSslCertificateTrustStoreFileType | quote }}
+  QUARKUS_LOG_LEVEL: {{ .Values.config.quarkusLogLevel | quote }}
+  EVENT_GENERATOR_ENABLED: {{ .Values.config.eventGeneratorEnabled | quote }}
+  EVENT_GENERATOR_SCHEDULE: {{ .Values.config.eventGeneratorSchedule | quote }}
+  EVENT_GENERATOR_EVENTS_PATH: {{ .Values.config.eventGeneratorEventsPath | quote }}
+  EVENT_GENERATOR_EXCEPTIONS_PATH: {{ .Values.config.eventGeneratorExceptionsPath | quote }}
+  AMQP_BROKER_HOST: {{ .Values.config.amqpBrokerHost | quote }}
+  AMQP_BROKER_PORT: {{ .Values.config.amqpBrokerPort | quote }}
+  MARIADB_HOST: {{ .Values.config.mariadbHost | quote }}
+  MARIADB_PORT: {{ .Values.config.mariadbPort | quote }}
+  MARIADB_DATABASE: {{ .Values.config.mariadbDatabase | quote }}
+  MARIADB_USERNAME: {{ .Values.config.mariadbUsername | quote }}
+  MARIADB_PASSWORD: {{ .Values.config.mariadbPassword | quote }}

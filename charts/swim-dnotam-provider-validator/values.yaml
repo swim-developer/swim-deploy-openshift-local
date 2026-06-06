@@ -1,0 +1,77 @@
+namespace: swim-demo
+
+appName: dnotam-provider-validator
+
+clusterDomain: apps-crc.testing
+
+labels:
+  app: dnotam-provider-validator
+  app.kubernetes.io/name: dnotam-provider-validator
+  app.kubernetes.io/component: dnotam-provider-validator
+  app.kubernetes.io/part-of: swim-dnotam
+
+image:
+  repository: quay.io/masales/swim-dnotam-provider-validator
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1
+
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 100m
+  limits:
+    memory: 256Mi
+    cpu: "1"
+
+service:
+  httpPort: 8080
+
+hpa:
+  enabled: false
+
+config:
+  keycloakUrl: "https://rhbk.apps-crc.testing"
+  keycloakRealm: "swim"
+  keycloakClientId: "swim-public-client"
+  swimProviderApiUrls: "https://swim-dnotam-provider-mtls.apps-crc.testing"
+  proxyMtlsKeystorePath: "/certs/client/keystore.p12"
+  proxyMtlsKeystoreType: "PKCS12"
+  proxyMtlsTruststorePath: "/certs/client/truststore.p12"
+  proxyMtlsTruststoreType: "PKCS12"
+  mariadbHost: "dnotam-provider-validator-mariadb"
+  mariadbPort: "3306"
+  mariadbDatabase: "swim_provider_validator"
+  mariadbUsername: "swim"
+  swimProviderAmqpHost: "provider-artemis-amqps-0-svc-rte-swim-demo.apps-crc.testing"
+  swimProviderAmqpPort: "443"
+  mariadbPassword: "swim"
+
+secret:
+  certsPassword: "changeit"
+  proxyMtlsKeystorePassword: "changeit"
+  proxyMtlsTruststorePassword: "changeit"
+
+clientCert:
+  enabled: true
+  issuerName: swim-ca-issuer
+  issuerKind: ClusterIssuer
+  duration: 2160h
+  renewBefore: 360h
+
+pvc:
+  enabled: true
+  storage: 100Mi
+  accessMode: ReadWriteOnce
+
+route:
+  enabled: true
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+
+serviceMonitor:
+  enabled: false

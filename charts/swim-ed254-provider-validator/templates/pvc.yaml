@@ -1,0 +1,15 @@
+{{- if .Values.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.appName }}-data
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-ed254-provider-validator.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.pvc.storage }}
+{{- end }}

@@ -1,0 +1,67 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}-frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}-frontend
+        {{- toYaml .Values.labels | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
+        imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.frontend.port }}
+          name: http
+          protocol: TCP
+        env:
+        - name: BACKEND_URL
+          value: {{ .Values.frontend.env.backendUrl | quote }}
+        - name: CONSUMER_URL
+          value: "http://{{ .Values.consumer.serviceName }}.{{ .Values.swimNamespace }}.svc.cluster.local:{{ .Values.consumer.port }}"
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 10 }}
+        volumeMounts:
+        - name: env-config
+          mountPath: /usr/share/nginx/html/env-config.js
+          subPath: env-config.js
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.frontend.port }}
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.frontend.port }}
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: env-config
+        configMap:
+          name: {{ .Values.appName }}-frontend-config
+      - name: nginx-conf
+        emptyDir: {}
+{{- end }}

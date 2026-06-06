@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-ed254-provider-validator.labels" . | nindent 4 }}
+data:
+  KEYCLOAK_URL: {{ .Values.config.keycloakUrl | quote }}
+  KEYCLOAK_REALM: {{ .Values.config.keycloakRealm | quote }}
+  KEYCLOAK_CLIENT_ID: {{ .Values.config.keycloakClientId | quote }}
+  SWIM_PROVIDER_API_URLS: {{ .Values.config.swimProviderApiUrls | quote }}
+  PROXY_MTLS_KEYSTORE_PATH: {{ .Values.config.proxyMtlsKeystorePath | quote }}
+  PROXY_MTLS_KEYSTORE_TYPE: {{ .Values.config.proxyMtlsKeystoreType | quote }}
+  PROXY_MTLS_TRUSTSTORE_PATH: {{ .Values.config.proxyMtlsTruststorePath | quote }}
+  PROXY_MTLS_TRUSTSTORE_TYPE: {{ .Values.config.proxyMtlsTruststoreType | quote }}
+  MARIADB_HOST: {{ .Values.config.mariadbHost | quote }}
+  MARIADB_PORT: {{ .Values.config.mariadbPort | quote }}
+  MARIADB_DATABASE: {{ .Values.config.mariadbDatabase | quote }}
+  MARIADB_USERNAME: {{ .Values.config.mariadbUsername | quote }}
+  SWIM_PROVIDER_AMQP_HOST: {{ .Values.config.swimProviderAmqpHost | quote }}
+  SWIM_PROVIDER_AMQP_PORT: {{ .Values.config.swimProviderAmqpPort | quote }}
+  MARIADB_PASSWORD: {{ .Values.config.mariadbPassword | quote }}

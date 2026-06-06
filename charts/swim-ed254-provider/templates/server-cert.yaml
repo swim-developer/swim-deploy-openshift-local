@@ -1,0 +1,52 @@
+{{- if .Values.serverCert.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.appName }}-keystore-password
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-ed254-provider.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  password: {{ .Values.serverCert.keystorePassword | default "changeit" | quote }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.appName }}-server
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "swim-ed254-provider.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.appName }}-server-tls
+  issuerRef:
+    name: {{ .Values.serverCert.issuerName }}
+    kind: {{ .Values.serverCert.issuerKind }}
+  commonName: {{ .Values.appName }}.{{ .Values.clusterDomain }}
+  dnsNames:
+    - {{ .Values.appName }}.{{ .Values.clusterDomain }}
+    - swim-ed254-provider-mtls.{{ .Values.namespace }}.{{ .Values.clusterDomain }}
+    - {{ .Values.appName }}.{{ .Values.namespace }}.svc.cluster.local
+    - {{ .Values.appName }}.{{ .Values.namespace }}.svc
+    - {{ .Values.appName }}.{{ .Values.namespace }}
+    - {{ .Values.appName }}
+    - localhost
+  usages:
+    - server auth
+    - client auth
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        name: {{ .Values.appName }}-keystore-password
+        key: password
+    jks:
+      create: true
+      passwordSecretRef:
+        name: {{ .Values.appName }}-keystore-password
+        key: password
+{{- end }}

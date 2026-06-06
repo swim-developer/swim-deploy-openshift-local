@@ -1,0 +1,18 @@
+apiVersion: v2
+name: ed254-arrival-flow-manager
+description: ED-254 Arrival Flow Manager - Modern arrival sequence management dashboard for Flow Managers
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - swim
+  - ed254
+  - aviation
+  - atm
+  - aman
+  - arrival-sequence
+maintainers:
+  - name: Marcelo Sales
+    email: masales@redhat.com
+sources:
+  - https://github.com/swim-developer/rhone

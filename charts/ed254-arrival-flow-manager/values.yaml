@@ -1,0 +1,79 @@
+namespace: swim-demo
+appName: ed254-arrival-flow-manager
+
+swimNamespace: swim-demo
+
+backend:
+  enabled: true
+  image:
+    repository: quay.io/masales/example-apps-ed254-manager
+    tag: backend
+    pullPolicy: Always
+  replicas: 1
+  port: 8091
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    javaOpts: "-Xmx768m -XX:+UseParallelGC"
+    logLevel: "INFO"
+  livenessProbe:
+    path: /q/health/live
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    path: /q/health/ready
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+frontend:
+  enabled: true
+  image:
+    repository: quay.io/masales/example-apps-ed254-manager
+    tag: frontend
+    pullPolicy: Always
+  replicas: 1
+  port: 8080
+  resources:
+    requests:
+      memory: "32Mi"
+      cpu: "50m"
+    limits:
+      memory: "64Mi"
+      cpu: "100m"
+  env:
+    backendUrl: http://ed254-arrival-flow-manager-backend:8091
+  route:
+    enabled: true
+    host: ed254-arrival-flow-manager.apps-crc.testing
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+
+ed254Consumer:
+  serviceName: swim-ed254-consumer
+  port: 8080
+
+kafka:
+  serviceName: kafka-kafka-bootstrap
+  port: 9092
+  topics:
+    arrivalSequence: ed254-arrival-sequence-topic
+    providerException: ed254-provider-exception-topic
+  consumerGroup: ed254-arrival-flow-manager
+
+labels:
+  app.kubernetes.io/name: ed254-arrival-flow-manager
+  app.kubernetes.io/instance: ed254-arrival-flow-manager
+  app.kubernetes.io/part-of: swim-framework
+  app.kubernetes.io/component: example-app
+  app.kubernetes.io/managed-by: helm

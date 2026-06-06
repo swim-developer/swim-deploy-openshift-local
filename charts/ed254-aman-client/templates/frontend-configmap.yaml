@@ -1,0 +1,15 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-frontend-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: frontend
+data:
+  env-config.js: |
+    window.ENV = {
+      BACKEND_URL: 'https://{{ .Values.frontend.route.host }}/api'
+    };
+{{- end }}

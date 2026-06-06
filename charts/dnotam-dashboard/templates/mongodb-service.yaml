@@ -1,0 +1,20 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}-mongodb
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.labels | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for StatefulSet
+  ports:
+  - port: {{ .Values.mongodb.port }}
+    targetPort: {{ .Values.mongodb.port }}
+    protocol: TCP
+    name: mongodb
+  selector:
+    app: {{ .Values.appName }}-mongodb
+{{- end }}
